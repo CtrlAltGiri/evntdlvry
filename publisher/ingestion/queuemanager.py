@@ -11,13 +11,22 @@ class RedisQueue:
         )
 
         self.db.ping()
-        print('db connection successful')
+        self.consumers = [
+            'http://consumer1:5000/consumeEvent', 
+            'http://consumer2:5000/consumeEvent', 
+            'http://consumer3:5000/consumeEvent']
 
-    def push(self, message):
-        self.db.lpush(self.database_name, message)
-    
+    def push(self, message, messageId):
+        self.db.set(messageId, message)
+        for consumer in self.consumers:
+            self.db.lpush(consumer, messageId)
+
     def pop(self):
         return self.db.lpop(self.database_name)
+
+    def getMessageId(self, queueName):
+        incrName = queueName + ".nextIndex"
+        return self.db.incr(incrName)
 
     def __init__(self, config):
         self.setup_redis(config)

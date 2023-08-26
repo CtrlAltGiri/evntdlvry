@@ -10,7 +10,7 @@ queueInstance = RedisQueue(app.config)
 def ingestEvent():
     contentType = request.headers.get('Content-Type')
     if contentType == 'application/json':
-        queueInstance.push(request.json.__str__())
+        queueInstance.push(request.json.__str__(), queueInstance.getMessageId("pub"))
         return make_response('Accepted', 201)
     else:
         return make_response('Only JSON events are supported', 400)

@@ -18,11 +18,23 @@ services:
     depends_on:
       - redis
 
-  consumer:
+  consumer1:
     build: ./consumer
-    container_name: consumer_service
+    container_name: consumer1
     ports:
       - '7000:5000'
+  
+  consumer2:
+    build: ./consumer
+    container_name: consumer2
+    ports:
+      - '7001:5000'
+
+  consumer3:
+    build: ./consumer
+    container_name: consumer3
+    ports:
+      - '7002:5000'
 
   redis:
     image: redis:latest
