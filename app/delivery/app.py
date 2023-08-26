@@ -6,13 +6,19 @@ import requests
 from concurrent.futures import ThreadPoolExecutor
 
 def task(id):
+    # define new list for elements being processed
+    newQueue = id + "_processing"
+    
+    # spin lock and acquire messages per-consumer
     while True:
         try:
-            messageId = db.brpop(id)
-            message = db.get(messageId[1])
-            print("posting ", messageId)
+            messageId = db.brpoplpush(id, newQueue)
+            message = db.get(messageId)
+
+            print("posting ", messageId, " to queue ", id)
             requests.post(id, json=json.loads(message.replace("'", '"')))
-            print("completed ", messageId)
+            db.brpop(newQueue)
+            print("completed ", messageId, " for endpoint ", id)
         except Exception as e:
             print(f"failure occured: {str(e)}")
 
@@ -31,6 +37,7 @@ if __name__ == "__main__":
     
     db.ping()
 
+    # TODO: Take from discovery service
     consumers = [
             'http://consumer1:5000/consumeEvent', 
             'http://consumer2:5000/consumeEvent', 

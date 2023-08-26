@@ -2,7 +2,7 @@ ARG PYTHON_VERSION=3
 FROM python:${PYTHON_VERSION}-slim as base
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-ENV CONSUMER_SETTINGS=settings.cfg
+ENV INGESTION_SETTINGS=settings.cfg
 
 WORKDIR /app
 
@@ -19,12 +19,14 @@ RUN adduser \
 RUN apt-get update && apt-get -y install libpq-dev gcc
 
 RUN --mount=type=cache,target=/root/.cache/pip \
-    --mount=type=bind,source=requirements.txt,target=requirements.txt \
-    python -m pip install -r requirements.txt
+    --mount=type=bind,source=./ingestion/requirements.txt,target=./ingestion/requirements.txt \
+    python -m pip install -r ./ingestion/requirements.txt
 
 USER appuser
 
-COPY . .
+COPY ./ingestion .
+COPY ./settings.cfg .
+COPY ./utils ./utils
 
 EXPOSE 5000
 

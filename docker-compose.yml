@@ -3,7 +3,9 @@ version: '3'
 services:
   
   ingestion:
-    build: ./publisher/ingestion
+    build: 
+      context: ./app
+      dockerfile: ./ingestionDockerFile
     container_name: ingestion_service
     ports:
       - '5000:5000'
@@ -11,7 +13,9 @@ services:
       - redis
 
   delivery:
-    build: ./publisher/delivery
+    build: 
+      context: ./app
+      dockerfile: ./deliveryDockerFile
     container_name: delivery_service
     ports:
       - '6000:5000'
@@ -19,19 +23,25 @@ services:
       - redis
 
   consumer1:
-    build: ./consumer
+    build: 
+      context: ./app
+      dockerfile: ./consumerDockerFile
     container_name: consumer1
     ports:
       - '7000:5000'
   
   consumer2:
-    build: ./consumer
+    build: 
+      context: ./app
+      dockerfile: ./consumerDockerFile
     container_name: consumer2
     ports:
       - '7001:5000'
 
   consumer3:
-    build: ./consumer
+    build: 
+      context: ./app
+      dockerfile: ./consumerDockerFile
     container_name: consumer3
     ports:
       - '7002:5000'

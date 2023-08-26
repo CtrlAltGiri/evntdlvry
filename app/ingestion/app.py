@@ -1,6 +1,6 @@
 from flask import Flask, request, make_response
 import json
-from queuemanager import RedisQueue
+from utils.queuemanager import RedisQueue
 
 app = Flask(__name__)
 app.config.from_envvar('INGESTION_SETTINGS')
