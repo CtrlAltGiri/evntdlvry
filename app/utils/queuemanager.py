@@ -1,6 +1,31 @@
 import redis
+from enum import Enum
+from abc import ABC, abstractmethod
 
-class RedisQueue:
+class DB(ABC):
+    @abstractmethod
+    def push(self, message, messageId):
+        pass
+
+    @abstractmethod
+    def pop(self, messageId):
+        pass
+
+    @abstractmethod
+    def getMessageId(self, queue):
+        pass
+
+class TestDB(DB):
+    def push(self, message, messageId):
+        pass
+
+    def pop(self, messageId):
+        pass
+
+    def getMessageId(self, queue):
+        pass
+
+class RedisQueue(DB):
     def setup_redis(self, config):
         self.db = redis.Redis(
             host=config["REDIS_HOST"],
@@ -31,3 +56,17 @@ class RedisQueue:
     def __init__(self, config):
         self.setup_redis(config)
         self.database_name = config["REDIS_DATABASE"]
+
+class DBType(Enum):
+    TEST = 1
+    REDIS = 2
+
+class DBFactory:
+    def __init__(self, type):
+        self.type = type
+    
+    def getInstance(self, config) -> DB:
+        if self.type == DBType.TEST:
+            return TestDB()
+        else:
+            return RedisQueue(config)

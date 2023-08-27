@@ -1,23 +1,25 @@
-from flask import Flask, request, make_response
+from flask import Flask, request, make_response, Blueprint, g
 import json
-from utils.queuemanager import RedisQueue
+from utils.queuemanager import DBFactory, DBType
 
-app = Flask(__name__)
-app.config.from_envvar('INGESTION_SETTINGS')
-queueInstance = RedisQueue(app.config)
-
-@app.route("/event", methods=["POST"])
+event = Blueprint('event', __name__, url_prefix='/event')
+@event.route("/", methods=["POST"])
 def ingestEvent():
     contentType = request.headers.get('Content-Type')
     if contentType == 'application/json':
-        queueInstance.push(request.json.__str__(), queueInstance.getMessageId("pub"))
+        g.db.push(request.json.__str__(), g.db.getMessageId("pub"))
         return make_response('Accepted', 201)
     else:
         return make_response('Only JSON events are supported', 400)
 
-if __name__ == "__main__":
-    # Setup redis
-    global db
-    db = setup_redis(app.config)
+def create_app(config_filename):
+    app = Flask(__name__)
+    app.config.from_pyfile(config_filename)
 
-    app.run(debug=True)
+    @app.before_request
+    def init():
+        if 'db' not in g:
+            g.db = DBFactory(DBType(app.config['DB_TYPE'])).getInstance(app.config)
+
+    app.register_blueprint(event)
+    return app
